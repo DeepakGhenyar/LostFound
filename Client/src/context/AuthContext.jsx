@@ -7,28 +7,43 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // On mount: restore auth from localStorage
   useEffect(() => {
-    const savedToken = localStorage.getItem('token')
-    const savedUser = localStorage.getItem('user')
-    if (savedToken && savedUser) {
-      setToken(savedToken)
-      setUser(JSON.parse(savedUser))
+    try {
+      const savedToken = localStorage.getItem('token')
+      const savedUser = localStorage.getItem('user')
+      if (savedToken && savedUser) {
+        const parsedUser = JSON.parse(savedUser)
+        setToken(savedToken)
+        setUser(parsedUser)
+        console.log('✅ Auth restored from localStorage for:', parsedUser.name)
+      } else {
+        console.log('ℹ️ No saved auth found in localStorage')
+      }
+    } catch (err) {
+      console.error('❌ Error restoring auth:', err)
+      // Corrupted data — clear it
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   const login = (userData, tokenData) => {
-    setUser(userData)
-    setToken(tokenData)
+    console.log('🔑 Login called for:', userData?.name, '| Token:', tokenData ? 'present' : 'missing')
     localStorage.setItem('token', tokenData)
     localStorage.setItem('user', JSON.stringify(userData))
+    setToken(tokenData)
+    setUser(userData)
   }
 
   const logout = () => {
-    setUser(null)
-    setToken(null)
+    console.log('🚪 Logout called')
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    setToken(null)
+    setUser(null)
   }
 
   return (

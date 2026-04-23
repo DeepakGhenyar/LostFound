@@ -1,21 +1,20 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL + "/api"
+  baseURL: import.meta.env.VITE_API_URL + "/api",
+  timeout: 10000,
 });
 
-// Add a request interceptor to attach the auth token
+// ─── Request Interceptor: Attach token ─────────────────────────
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default API;

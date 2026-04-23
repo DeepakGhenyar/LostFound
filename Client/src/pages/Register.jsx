@@ -21,11 +21,16 @@ export default function Register() {
     setError('')
     try {
       const { data } = await API.post('/register', form)
-      if (data.success) {
+      console.log('📡 Register API response:', data)
+      if (data.success && data.token && data.user) {
         login(data.user, data.token)
-        navigate('/dashboard')
+        console.log('✅ Registration successful, navigating to dashboard...')
+        navigate('/dashboard', { replace: true })
+      } else {
+        setError('Registration failed — server returned unexpected response')
       }
     } catch (err) {
+      console.error('❌ Register error:', err)
       setError(err.response?.data?.message || 'Registration failed. Try again.')
     } finally {
       setLoading(false)

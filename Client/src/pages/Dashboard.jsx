@@ -162,7 +162,7 @@ function EditModal({ item, onClose, onSave }) {
 
 // ─── Dashboard Page ────────────────────────────
 export default function Dashboard() {
-  const { user, logout } = useAuth()
+  const { user, token, logout } = useAuth()
   const navigate = useNavigate()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -184,19 +184,28 @@ export default function Dashboard() {
 
   const fetchItems = useCallback(async () => {
     setLoading(true)
+    setError('')
     try {
       let url = '/items'
       const params = []
       if (search) params.push(`name=${encodeURIComponent(search)}`)
       if (filterType) params.push(`category=${filterType}`)
       if (params.length > 0) url = `/items/search?${params.join('&')}`
+
+      console.log('📡 Fetching items from:', url)
       const { data } = await API.get(url)
+      console.log('✅ Items fetched:', data)
       setItems(data.items || [])
     } catch (err) {
+      console.error('❌ Fetch items error:', err.response?.status, err.message)
+      // ⚠️ DO NOT auto-logout on 401 — just show an error
+      // The user is already authenticated, the server might just be having issues
       if (err.response?.status === 401) {
-        handleLogout()
+        setError('Session may have expired. Try logging out and back in.')
+      } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+        setError('Cannot connect to server. Make sure backend is running.')
       } else {
-        setError('Failed to load items')
+        setError('Failed to load items. Please try again.')
       }
     } finally {
       setLoading(false)
@@ -204,12 +213,13 @@ export default function Dashboard() {
   }, [search, filterType])
 
   useEffect(() => {
+    console.log('📋 Dashboard mounted | User:', user?.name, '| Token:', token ? 'present' : 'missing')
     fetchItems()
   }, [fetchItems])
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
   const handleAddItem = async (e) => {

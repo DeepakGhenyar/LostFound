@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import {  Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 // Protect routes - only logged-in users can access
