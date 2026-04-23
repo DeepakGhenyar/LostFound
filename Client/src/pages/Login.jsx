@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import API from '../api/axios'
 
 export default function Login() {
-  const navigate = useNavigate()
   const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
@@ -22,9 +21,8 @@ export default function Login() {
     try {
       const { data } = await API.post('/login', form)
       if (data.success) {
-        // Store JWT in localStorage & redirect to dashboard
+        // Store JWT in localStorage - PublicRoute will auto-redirect to /dashboard
         login(data.user, data.token)
-        navigate('/dashboard')
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password')
